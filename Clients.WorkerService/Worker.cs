@@ -6,23 +6,23 @@ namespace Clients.WorkerService
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
-        public IClusterClient OrleansClusterClient { get; set; }
+        private readonly IClusterClient _orleansClusterClient;
 
         public Worker(ILogger<Worker> logger, IClusterClient orleansClusterClient)
         {
             _logger = logger;
-            OrleansClusterClient = orleansClusterClient;
+            _orleansClusterClient = orleansClusterClient;
         }
 
         public override async Task StartAsync(CancellationToken cancellationToken)
         {
-            await OrleansClusterClient.Connect();
+            await _orleansClusterClient.Connect();
             await base.StartAsync(cancellationToken);
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
-            await OrleansClusterClient.DisposeAsync();
+            await _orleansClusterClient.DisposeAsync();
             await base.StopAsync(cancellationToken);
         }
 
@@ -36,7 +36,7 @@ namespace Clients.WorkerService
             {
                 var key = $"device{i.ToString().PadLeft(5, '0')}-{rnd.Next(10000, 99999)}-{Environment.MachineName}";
                 randomDeviceIDs.Add(key);
-                randomDevices.Add(key, OrleansClusterClient.GetGrain<ISensorTwinGrain>(key));
+                randomDevices.Add(key, _orleansClusterClient.GetGrain<ISensorTwinGrain>(key));
             }
 
             while (!stoppingToken.IsCancellationRequested)
